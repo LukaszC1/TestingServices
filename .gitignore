@@ -54,3 +54,5 @@ TestResult.xml
 nunit-*.xml
 /.vs
 /TestingServices/.vs
+/TestingServices/northwind.db-shm
+/TestingServices/northwind.db-wal

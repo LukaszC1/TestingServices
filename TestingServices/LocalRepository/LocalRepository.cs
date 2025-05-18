@@ -15,19 +15,17 @@ namespace LocalRepository
 
         public LocalRepository()
         {
-            _connectionString = "Data Source=Northwind.db;Version=3;Pooling=True;Max Pool Size=100;";
+            _connectionString = "Data Source=../northwind.db;Pooling=True;";
             EnableWriteAheadLogging();
         }
-    
-
-    private void EnableWriteAheadLogging()
-    {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
-        using var command = new SqliteCommand("PRAGMA journal_mode=WAL;", connection);
-        command.ExecuteNonQuery();
-    }
-
+        
+        private void EnableWriteAheadLogging()
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            using var command = new SqliteCommand("PRAGMA journal_mode=WAL;", connection);
+            command.ExecuteNonQuery();
+        }
 
         public async Task<Product?>? GetProductByIdAsync(int productId)
         {

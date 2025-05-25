@@ -1,6 +1,8 @@
 ﻿using GraphQL.Types;
 using LocalRepository.DTO;
 
+namespace GraphqlService.Types;
+
 public sealed class ProductType : ObjectGraphType<Product>
 {
     public ProductType()
@@ -66,5 +68,15 @@ public sealed class OrderDetailType : ObjectGraphType<OrderDetail>
         Field(x => x.UnitPrice);
         Field(x => x.Quantity);
         Field(x => x.Discount);
+    }
+}
+
+public sealed class EmployeeType : ObjectGraphType<Employee>
+{
+    public EmployeeType()
+    {
+        Field(x => x.EmployeeID);
+        Field(x => x.FirstName, nullable: true);
+        Field(x => x.LastName, nullable: true);
     }
 }

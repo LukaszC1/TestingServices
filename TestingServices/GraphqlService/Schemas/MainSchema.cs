@@ -1,4 +1,7 @@
 ﻿using GraphQL.Types;
+using GraphqlService.Queries;
+
+namespace GraphqlService.Schemas;
 
 public class MainSchema : Schema
 {

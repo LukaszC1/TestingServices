@@ -1,4 +1,5 @@
 using LocalRepository;
+using LocalRepository.DTO;
 
 namespace RestService
 {
@@ -25,11 +26,10 @@ namespace RestService
 
             app.UseAuthorization();
 
-            // REST endpoints reflecting gRPC/CoreWCF
-            app.MapGet("/products/{id:int}", async (int id, IRepository repo) =>
+            app.MapGet("/employees", async (IRepository repo) =>
             {
-                var product = await repo.GetProductByIdAsync(id);
-                return product is not null ? Results.Ok(product) : Results.NotFound();
+                var employees = await repo.GetAllEmployeesAsync();
+                return Results.Ok(employees);
             });
 
             app.MapGet("/products", async (IRepository repo) =>
@@ -50,11 +50,6 @@ namespace RestService
                 return Results.Ok(customers);
             });
 
-            app.MapGet("/orders/{id:int}", async (int id, IRepository repo) =>
-            {
-                var order = await repo.GetOrderByIdAsync(id);
-                return order is not null ? Results.Ok(order) : Results.NotFound();
-            });
 
             app.MapGet("/orders", async (IRepository repo) =>
             {
@@ -66,6 +61,18 @@ namespace RestService
             {
                 var details = await repo.GetOrderDetailsByOrderIdAsync(id);
                 return Results.Ok(details);
+            });
+
+            app.MapPost("/customers", async (Customer customer, IRepository repo) =>
+            {
+                var result = await repo.AddCustomerAsync(customer);
+                return result ? Results.Created($"/customers/{customer.CustomerID}", customer) : Results.BadRequest();
+            });
+
+            app.MapPost("/orders", async (Order order, IRepository repo) =>
+            {
+                var orderId = await repo.AddOrderAsync(order);
+                return orderId > 0 ? Results.Created($"/orders/{orderId}", orderId) : Results.BadRequest();
             });
 
             app.Run();

@@ -3,23 +3,11 @@ using GrpcServiceProto;
 
 namespace GrpcService.Client
 {
-    public class GrpcServiceClient(GrpcServiceProto.GrpcService.GrpcServiceClient client) : GrpcServiceProto.GrpcService.GrpcServiceClient
+    public class GrpcServiceClient(GrpcServiceProto.GrpcService.GrpcServiceClient client)
     {
-        public async Task<ProductResponse> GetProductByIdAsync(int productId)
-        {
-            var request = new ProductRequest { ProductId = productId };
-            return await client.GetProductByIdAsync(request);
-        }
-
         public async Task<ProductListResponse> GetAllProductsAsync()
         {
             return await client.GetAllProductsAsync(new Empty());
-        }
-
-        public async Task<CustomerResponse> GetCustomerByIdAsync(string customerId)
-        {
-            var request = new CustomerRequest { CustomerId = customerId };
-            return await client.GetCustomerByIdAsync(request);
         }
 
         public async Task<CustomerListResponse> GetAllCustomersAsync()
@@ -27,10 +15,10 @@ namespace GrpcService.Client
             return await client.GetAllCustomersAsync(new Empty());
         }
 
-        public async Task<OrderResponse> GetOrderByIdAsync(int orderId)
+        public async Task<CustomerResponse> GetCustomerByIdAsync(string customerId)
         {
-            var request = new OrderRequest { OrderId = orderId };
-            return await client.GetOrderByIdAsync(request);
+            var request = new CustomerRequest { CustomerId = customerId };
+            return await client.GetCustomerByIdAsync(request);
         }
 
         public async Task<OrderListResponse> GetAllOrdersAsync()
@@ -43,5 +31,21 @@ namespace GrpcService.Client
             var request = new OrderRequest { OrderId = orderId };
             return await client.GetOrderDetailsByOrderIdAsync(request);
         }
+
+        public async Task<AddCustomerReply> AddCustomerAsync(Customer customer)
+        {
+            return await client.AddCustomerAsync(customer);
+        }
+
+        public async Task<EmployeeListResponse> GetAllEmployeesAsync()
+        {
+            return await client.GetAllEmployeesAsync(new Empty());
+        }
+
+        public async Task<AddOrderReply> AddOrderAsync(Order order)
+        {
+            return await client.AddOrderAsync(order);
+        }
     }
+}
 }

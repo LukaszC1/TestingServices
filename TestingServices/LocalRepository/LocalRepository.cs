@@ -27,50 +27,15 @@ namespace LocalRepository
             command.ExecuteNonQuery();
         }
 
-        public async Task<Product?>? GetProductByIdAsync(int productId)
-        {
-            await using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Products WHERE ProductID = @ProductID", connection);
-            cmd.Parameters.AddWithValue("@ProductID", productId);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapProduct(reader);
-            }
-
-            return null;
-        }
-
-        public async Task<IEnumerable<Product?>> GetAllProductsAsync()
-        {
-            var products = new List<Product?>();
-            await using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Products", connection);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                products.Add(MapProduct(reader));
-            }
-
-            return products;
-        }
-
         public async Task<Customer?> GetCustomerByIdAsync(string customerId)
         {
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Customers WHERE CustomerID = @CustomerID", connection);
+            var cmd = new SqliteCommand("SELECT * FROM Customers WHERE CustomerID = @CustomerID", connection);
             cmd.Parameters.AddWithValue("@CustomerID", customerId);
-            await using var reader = await cmd.ExecuteReaderAsync();
 
-            if (await reader.ReadAsync())
-            {
-                return MapCustomer(reader);
-            }
-
-            return null;
+            var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapCustomer(reader) : null;
         }
 
         public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
@@ -78,31 +43,39 @@ namespace LocalRepository
             var customers = new List<Customer>();
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Customers", connection);
-            await using var reader = await cmd.ExecuteReaderAsync();
+            var cmd = new SqliteCommand("SELECT * FROM Customers", connection);
+            var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
-            {
                 customers.Add(MapCustomer(reader));
-            }
 
             return customers;
         }
 
-        public async Task<Order?> GetOrderByIdAsync(int orderId)
+        public async Task<bool> AddCustomerAsync(Customer customer)
         {
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Orders WHERE OrderID = @OrderID", connection);
-            cmd.Parameters.AddWithValue("@OrderID", orderId);
-            await using var reader = await cmd.ExecuteReaderAsync();
+            var cmd = new SqliteCommand("INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (@CustomerID, @CompanyName, @ContactName)", connection);
+            cmd.Parameters.AddWithValue("@CustomerID", customer.CustomerID);
+            cmd.Parameters.AddWithValue("@CompanyName", customer.CompanyName);
+            cmd.Parameters.AddWithValue("@ContactName", customer.ContactName ?? (object)DBNull.Value);
 
-            if (await reader.ReadAsync())
-            {
-                return MapOrder(reader);
-            }
+            return await cmd.ExecuteNonQueryAsync() > 0;
+        }
 
-            return null;
+        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        {
+            var employees = new List<Employee>();
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var cmd = new SqliteCommand("SELECT * FROM Employees", connection);
+            var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+                employees.Add(MapEmployee(reader));
+
+            return employees;
         }
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
@@ -110,15 +83,40 @@ namespace LocalRepository
             var orders = new List<Order>();
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM Orders", connection);
-            await using var reader = await cmd.ExecuteReaderAsync();
+            var cmd = new SqliteCommand("SELECT * FROM Orders", connection);
+            var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
-            {
                 orders.Add(MapOrder(reader));
-            }
 
             return orders;
+        }
+
+        public async Task<int> AddOrderAsync(Order order)
+        {
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var cmd = new SqliteCommand("INSERT INTO Orders (CustomerID, EmployeeID, OrderDate) VALUES (@CustomerID, @EmployeeID, @OrderDate); SELECT last_insert_rowid();", connection);
+            cmd.Parameters.AddWithValue("@CustomerID", order.CustomerID);
+            cmd.Parameters.AddWithValue("@EmployeeID", order.EmployeeID);
+            cmd.Parameters.AddWithValue("@OrderDate", order.OrderDate);
+
+            var insertedId = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(insertedId);
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            var products = new List<Product>();
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var cmd = new SqliteCommand("SELECT * FROM Products", connection);
+            var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+                products.Add(MapProduct(reader));
+
+            return products;
         }
 
         public async Task<IEnumerable<OrderDetail>> GetOrderDetailsByOrderIdAsync(int orderId)
@@ -126,136 +124,50 @@ namespace LocalRepository
             var details = new List<OrderDetail>();
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            await using var cmd = new SqliteCommand("SELECT * FROM [Order Details] WHERE OrderID = @OrderID", connection);
+            var cmd = new SqliteCommand("SELECT * FROM [Order Details] WHERE OrderID = @OrderID", connection);
             cmd.Parameters.AddWithValue("@OrderID", orderId);
-            await using var reader = await cmd.ExecuteReaderAsync();
+            var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
-            {
                 details.Add(MapOrderDetail(reader));
-            }
 
             return details;
         }
 
-        private static Product? MapProduct(SqliteDataReader reader)
+        private static Customer MapCustomer(SqliteDataReader reader) => new Customer
         {
-            return new Product
-            {
-                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-                ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
-                SupplierID = reader.IsDBNull(reader.GetOrdinal("SupplierID"))
-                    ? null
-                    : reader.GetInt32(reader.GetOrdinal("SupplierID")),
-                CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID"))
-                    ? null
-                    : reader.GetInt32(reader.GetOrdinal("CategoryID")),
-                QuantityPerUnit = reader.IsDBNull(reader.GetOrdinal("QuantityPerUnit"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("QuantityPerUnit")),
-                UnitPrice = reader.IsDBNull(reader.GetOrdinal("UnitPrice"))
-                    ? null
-                    : reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
-                UnitsInStock = reader.IsDBNull(reader.GetOrdinal("UnitsInStock"))
-                    ? null
-                    : reader.GetInt16(reader.GetOrdinal("UnitsInStock")),
-                UnitsOnOrder = reader.IsDBNull(reader.GetOrdinal("UnitsOnOrder"))
-                    ? null
-                    : reader.GetInt16(reader.GetOrdinal("UnitsOnOrder")),
-                ReorderLevel = reader.IsDBNull(reader.GetOrdinal("ReorderLevel"))
-                    ? null
-                    : reader.GetInt16(reader.GetOrdinal("ReorderLevel")),
-                Discontinued = reader.GetBoolean(reader.GetOrdinal("Discontinued"))
-            };
-        }
+            CustomerID = reader["CustomerID"].ToString(),
+            CompanyName = reader["CompanyName"].ToString(),
+            ContactName = reader["ContactName"].ToString()
+        };
 
-        private static Customer MapCustomer(SqliteDataReader reader)
+        private static Employee MapEmployee(SqliteDataReader reader) => new Employee
         {
-            return new Customer
-            {
-                CustomerID = reader.GetString(reader.GetOrdinal("CustomerID")),
-                CompanyName = reader.GetString(reader.GetOrdinal("CompanyName")),
-                ContactName = reader.IsDBNull(reader.GetOrdinal("ContactName"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ContactName")),
-                ContactTitle = reader.IsDBNull(reader.GetOrdinal("ContactTitle"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ContactTitle")),
-                Address = reader.IsDBNull(reader.GetOrdinal("Address"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("Address")),
-                City = reader.IsDBNull(reader.GetOrdinal("City")) ? null : reader.GetString(reader.GetOrdinal("City")),
-                Region = reader.IsDBNull(reader.GetOrdinal("Region"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("Region")),
-                PostalCode = reader.IsDBNull(reader.GetOrdinal("PostalCode"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("PostalCode")),
-                Country = reader.IsDBNull(reader.GetOrdinal("Country"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("Country")),
-                Phone = reader.IsDBNull(reader.GetOrdinal("Phone"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("Phone")),
-                Fax = reader.IsDBNull(reader.GetOrdinal("Fax")) ? null : reader.GetString(reader.GetOrdinal("Fax"))
-            };
-        }
+            EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+            FirstName = reader["FirstName"].ToString(),
+            LastName = reader["LastName"].ToString()
+        };
 
-        private static Order MapOrder(SqliteDataReader reader)
+        private static Order MapOrder(SqliteDataReader reader) => new Order
         {
-            return new Order
-            {
-                OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
-                CustomerID = reader.GetString(reader.GetOrdinal("CustomerID")),
-                EmployeeID = reader.IsDBNull(reader.GetOrdinal("EmployeeID"))
-                    ? null
-                    : reader.GetInt32(reader.GetOrdinal("EmployeeID")),
-                OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate"))
-                    ? null
-                    : reader.GetDateTime(reader.GetOrdinal("OrderDate")),
-                RequiredDate = reader.IsDBNull(reader.GetOrdinal("RequiredDate"))
-                    ? null
-                    : reader.GetDateTime(reader.GetOrdinal("RequiredDate")),
-                ShippedDate = reader.IsDBNull(reader.GetOrdinal("ShippedDate"))
-                    ? null
-                    : reader.GetDateTime(reader.GetOrdinal("ShippedDate")),
-                ShipVia = reader.IsDBNull(reader.GetOrdinal("ShipVia"))
-                    ? null
-                    : reader.GetInt32(reader.GetOrdinal("ShipVia")),
-                Freight = reader.IsDBNull(reader.GetOrdinal("Freight"))
-                    ? null
-                    : reader.GetDecimal(reader.GetOrdinal("Freight")),
-                ShipName = reader.IsDBNull(reader.GetOrdinal("ShipName"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipName")),
-                ShipAddress = reader.IsDBNull(reader.GetOrdinal("ShipAddress"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipAddress")),
-                ShipCity = reader.IsDBNull(reader.GetOrdinal("ShipCity"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipCity")),
-                ShipRegion = reader.IsDBNull(reader.GetOrdinal("ShipRegion"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipRegion")),
-                ShipPostalCode = reader.IsDBNull(reader.GetOrdinal("ShipPostalCode"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipPostalCode")),
-                ShipCountry = reader.IsDBNull(reader.GetOrdinal("ShipCountry"))
-                    ? null
-                    : reader.GetString(reader.GetOrdinal("ShipCountry"))
-            };
-        }
+            OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
+            CustomerID = reader["CustomerID"].ToString(),
+            EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+            OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate"))
+        };
 
-        private static OrderDetail MapOrderDetail(SqliteDataReader reader)
+        private static Product MapProduct(SqliteDataReader reader) => new Product
         {
-            return new OrderDetail
-            {
-                OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
-                ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-                UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
-                Quantity = reader.GetInt16(reader.GetOrdinal("Quantity")),
-                Discount = reader.GetFloat(reader.GetOrdinal("Discount"))
-            };
-        }
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            ProductName = reader["ProductName"].ToString()
+        };
+
+        private static OrderDetail MapOrderDetail(SqliteDataReader reader) => new OrderDetail
+        {
+            OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+        };
     }
+}
 }

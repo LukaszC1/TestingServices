@@ -2,74 +2,104 @@ syntax = "proto3";
 
 option csharp_namespace = "GrpcServiceProto";
 
-package GrpcServiceProto;
-
 import "google/protobuf/empty.proto";
 
 service GrpcService {
-    rpc GetProductById(ProductRequest) returns (ProductResponse);
-    rpc GetAllProducts(google.protobuf.Empty) returns (ProductListResponse);
-    
-    rpc GetCustomerById(CustomerRequest) returns (CustomerResponse);
-    rpc GetAllCustomers(google.protobuf.Empty) returns (CustomerListResponse);
-    
-    rpc GetOrderById(OrderRequest) returns (OrderResponse);
-    rpc GetAllOrders(google.protobuf.Empty) returns (OrderListResponse);
-    
-    rpc GetOrderDetailsByOrderId(OrderRequest) returns (OrderDetailListResponse);
-}
+  rpc GetAllCustomers (google.protobuf.Empty) returns (CustomerListResponse);
+  rpc AddCustomer (Customer) returns (AddCustomerReply);
+  rpc GetCustomerById (CustomerRequest) returns (CustomerResponse);
 
-message ProductRequest {
-    int32 productId = 1;
-}
+  rpc GetAllEmployees (google.protobuf.Empty) returns (EmployeeListResponse);
 
-message ProductResponse {
-    int32 productId = 1;
-    string productName = 2;
-    string quantityPerUnit = 3;
-    double unitPrice = 4;
-}
+  rpc GetAllOrders (google.protobuf.Empty) returns (OrderListResponse);
+  rpc AddOrder (Order) returns (AddOrderReply);
 
-message ProductListResponse {
-    repeated ProductResponse products = 1;
+  rpc GetAllProducts (google.protobuf.Empty) returns (ProductListResponse);
+
+  rpc GetOrderDetailsByOrderId (OrderRequest) returns (OrderDetailListResponse);
 }
 
 message CustomerRequest {
-    string customerId = 1;
+  string customerId = 1;
 }
 
 message CustomerResponse {
-    string customerId = 1;
+  string customerId = 1;
+  string companyName = 2;
+  string contactName = 3;
+}
+
+message CustomerListResponse {
+  repeated CustomerResponse customers = 1;
+}
+
+message AddCustomerReply {
+    bool success = 1;
+}
+
+message Employee {
+  int32 employeeId = 1;
+  string firstName = 2;
+  string lastName = 3;
+}
+
+message EmployeeListResponse {
+  repeated Employee employees = 1;
+}
+
+message OrderRequest {
+  int32 orderId = 1;
+}
+
+message OrderResponse {
+  int32 orderId = 1;
+  string customerId = 2;
+  string orderDate = 3;
+}
+
+message OrderListResponse {
+  repeated OrderResponse orders = 1;
+}
+
+message AddOrderReply {
+    int32 orderId = 1;
+}
+
+message ProductRequest {
+  int32 productId = 1;
+}
+
+message ProductResponse {
+  int32 productId = 1;
+  string productName = 2;
+  string quantityPerUnit = 3;
+  double unitPrice = 4;
+}
+
+message ProductListResponse {
+  repeated ProductResponse products = 1;
+}
+
+message OrderDetailResponse {
+  int32 orderId = 1;
+  int32 productId = 2;
+  double unitPrice = 3;
+  int32 quantity = 4;
+  float discount = 5;
+}
+
+message OrderDetailListResponse {
+  repeated OrderDetailResponse details = 1;
+}
+
+message Customer {
+    string customerID = 1;
     string companyName = 2;
     string contactName = 3;
 }
 
-message CustomerListResponse {
-    repeated CustomerResponse customers = 1;
-}
-
-message OrderRequest {
-    int32 orderId = 1;
-}
-
-message OrderResponse {
-    int32 orderId = 1;
-    string customerId = 2;
+message Order {
+    string customerID = 1;
+    int32 employeeID = 2;
     string orderDate = 3;
-}
-
-message OrderListResponse {
-    repeated OrderResponse orders = 1;
-}
-
-message OrderDetailResponse {
-    int32 orderId = 1;
-    int32 productId = 2;
-    double unitPrice = 3;
-    int32 quantity = 4;
-    float discount = 5;
-}
-
-message OrderDetailListResponse {
-    repeated OrderDetailResponse details = 1;
 }

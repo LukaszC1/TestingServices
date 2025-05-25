@@ -6,9 +6,6 @@ namespace CoreWCFService
     public interface ISoapService
     {
         [OperationContract]
-        Task<Product> GetProductByIdAsync(int productId);
-
-        [OperationContract]
         Task<IEnumerable<Product?>> GetAllProductsAsync();
 
         [OperationContract]
@@ -18,12 +15,18 @@ namespace CoreWCFService
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
 
         [OperationContract]
-        Task<Order> GetOrderByIdAsync(int orderId);
-
-        [OperationContract]
         Task<IEnumerable<Order>> GetAllOrdersAsync();
 
         [OperationContract]
         Task<IEnumerable<OrderDetail>> GetOrderDetailsByOrderIdAsync(int orderId);
+
+        [OperationContract]
+        Task<bool> AddCustomerAsync(Customer customer);
+
+        [OperationContract]
+        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
+
+        [OperationContract]
+        Task<int> AddOrderAsync(Order order);
     }
 }

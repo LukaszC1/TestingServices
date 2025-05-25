@@ -1,8 +1,10 @@
 using GraphQL;
 using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Types;
+using GraphqlService.Queries;
+using GraphqlService.Schemas;
+using GraphqlService.Types;
 using LocalRepository;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphqlService
 {

@@ -12,5 +12,7 @@ namespace LocalRepository
         Task<int> AddOrderAsync(Order order);
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<IEnumerable<OrderDetail>> GetOrderDetailsByOrderIdAsync(int orderId);
+        Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null);
+        Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null);
     }
 }

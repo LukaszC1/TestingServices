@@ -134,6 +134,128 @@ namespace LocalRepository
             return details;
         }
 
+        // Returns orders with their order details (nested), optionally filtered by orderId, using a single JOIN query
+        public async Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null)
+        {
+            var ordersDict = new Dictionary<int, OrderWithDetails>();
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var sql = @"
+                SELECT o.OrderID, o.CustomerID, o.EmployeeID, o.OrderDate,
+                       od.ProductID, od.Quantity
+                FROM Orders o
+                LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
+                " + (orderId.HasValue ? "WHERE o.OrderID = @OrderID" : "");
+
+            var cmd = new SqliteCommand(sql, connection);
+            if (orderId.HasValue)
+                cmd.Parameters.AddWithValue("@OrderID", orderId.Value);
+
+            var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var oid = reader.GetInt32(reader.GetOrdinal("OrderID"));
+                if (!ordersDict.TryGetValue(oid, out var order))
+                {
+                    order = new OrderWithDetails
+                    {
+                        OrderID = oid,
+                        CustomerID = reader["CustomerID"].ToString(),
+                        EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+                        OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate")),
+                        OrderDetails = []
+                    };
+                    ordersDict[oid] = order;
+                }
+
+                // If there is a detail row (ProductID not null)
+                if (!reader.IsDBNull(reader.GetOrdinal("ProductID")))
+                {
+                    order.OrderDetails.Add(new OrderDetail
+                    {
+                        OrderID = oid,
+                        ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                        Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+                    });
+                }
+            }
+            await reader.CloseAsync();
+
+            return ordersDict.Values;
+        }
+
+        // Returns customers with their orders and order details (nested), optionally filtered by customerId, using a single JOIN query
+        public async Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null)
+        {
+            var customersDict = new Dictionary<string, CustomerWithOrders>();
+            await using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var sql = @"
+                SELECT c.CustomerID, c.CompanyName, c.ContactName,
+                       o.OrderID, o.EmployeeID, o.OrderDate,
+                       od.ProductID, od.Quantity
+                FROM Customers c
+                LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
+                LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
+                " + (customerId != null ? "WHERE c.CustomerID = @CustomerID" : "");
+
+            var cmd = new SqliteCommand(sql, connection);
+            if (customerId != null)
+                cmd.Parameters.AddWithValue("@CustomerID", customerId);
+
+            var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var cid = reader["CustomerID"].ToString();
+                if (!customersDict.TryGetValue(cid, out var customer))
+                {
+                    customer = new CustomerWithOrders
+                    {
+                        CustomerID = cid,
+                        CompanyName = reader["CompanyName"].ToString(),
+                        ContactName = reader["ContactName"].ToString(),
+                        Orders = []
+                    };
+                    customersDict[cid] = customer;
+                }
+
+                // If there is an order row (OrderID not null)
+                if (!reader.IsDBNull(reader.GetOrdinal("OrderID")))
+                {
+                    var oid = reader.GetInt32(reader.GetOrdinal("OrderID"));
+                    var order = customer.Orders.FirstOrDefault(o => o.OrderID == oid);
+                    if (order == null)
+                    {
+                        order = new OrderWithDetails
+                        {
+                            OrderID = oid,
+                            CustomerID = cid,
+                            EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+                            OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate")),
+                            OrderDetails = new List<OrderDetail>()
+                        };
+                        customer.Orders.Add(order);
+                    }
+
+                    // If there is a detail row (ProductID not null)
+                    if (!reader.IsDBNull(reader.GetOrdinal("ProductID")))
+                    {
+                        order.OrderDetails.Add(new OrderDetail
+                        {
+                            OrderID = oid,
+                            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+                            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+                        });
+                    }
+                }
+            }
+            await reader.CloseAsync();
+
+            return customersDict.Values;
+        }
+
         private static Customer MapCustomer(SqliteDataReader reader) => new Customer
         {
             CustomerID = reader["CustomerID"].ToString(),
@@ -169,5 +291,4 @@ namespace LocalRepository
             Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
         };
     }
-}
 }

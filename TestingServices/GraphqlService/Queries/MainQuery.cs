@@ -51,5 +51,23 @@ public sealed class MainQuery : ObjectGraphType
                 var order = context.GetArgument<Order>("order");
                 return await repository.AddOrderAsync(order);
             });
+
+        Field<ListGraphType<OrderWithDetailsType>>("ordersWithDetails")
+            .Description("Returns orders with their order details. Optionally filter by orderId.")
+            .Arguments(new QueryArgument<IntGraphType> { Name = "orderId", Description = "Optional order ID" })
+            .ResolveAsync(async context =>
+            {
+                var orderId = context.GetArgument<int?>("orderId");
+                return await repository.GetOrdersWithDetailsAsync(orderId);
+            });
+
+        Field<ListGraphType<CustomerWithOrdersType>>("customersWithOrders")
+            .Description("Returns customers with their orders and order details. Optionally filter by customerId.")
+            .Arguments(new QueryArgument<StringGraphType> { Name = "customerId", Description = "Optional customer ID" })
+            .ResolveAsync(async context =>
+            {
+                var customerId = context.GetArgument<string>("customerId");
+                return await repository.GetCustomerWithOrdersAsync(customerId);
+            });
     }
 }

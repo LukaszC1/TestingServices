@@ -80,3 +80,26 @@ public sealed class EmployeeType : ObjectGraphType<Employee>
         Field(x => x.LastName, nullable: true);
     }
 }
+
+public sealed class OrderWithDetailsType : ObjectGraphType<OrderWithDetails>
+{
+    public OrderWithDetailsType()
+    {
+        Field(x => x.OrderID);
+        Field(x => x.CustomerID);
+        Field(x => x.EmployeeID);
+        Field(x => x.OrderDate);
+        Field<ListGraphType<OrderDetailType>>("orderDetails").Resolve(ctx => ctx.Source.OrderDetails);
+    }
+}
+
+public sealed class CustomerWithOrdersType : ObjectGraphType<CustomerWithOrders>
+{
+    public CustomerWithOrdersType()
+    {
+        Field(x => x.CustomerID);
+        Field(x => x.CompanyName);
+        Field(x => x.ContactName, nullable: true);
+        Field<ListGraphType<OrderWithDetailsType>>("orders").Resolve(ctx => ctx.Source.Orders);
+    }
+}

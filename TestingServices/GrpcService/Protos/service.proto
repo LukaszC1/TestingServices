@@ -17,6 +17,23 @@ service GrpcService {
   rpc GetAllProducts (google.protobuf.Empty) returns (ProductListResponse);
 
   rpc GetOrderDetailsByOrderId (OrderRequest) returns (OrderDetailListResponse);
+
+  rpc GetOrdersWithDetails (OrdersWithDetailsRequest) returns (OrdersWithDetailsResponse);
+  rpc GetCustomersWithOrders (CustomersWithOrdersRequest) returns (CustomersWithOrdersResponse);
+}
+
+message OrdersWithDetailsRequest {
+  optional int32 orderId = 1;
+}
+message OrdersWithDetailsResponse {
+  repeated OrderWithDetails orders = 1;
+}
+
+message CustomersWithOrdersRequest {
+  optional string customerId = 1;
+}
+message CustomersWithOrdersResponse {
+  repeated CustomerWithOrders customers = 1;
 }
 
 message CustomerRequest {
@@ -102,4 +119,19 @@ message Order {
     string customerID = 1;
     int32 employeeID = 2;
     string orderDate = 3;
+}
+
+message OrderWithDetails {
+  int32 orderId = 1;
+  string customerId = 2;
+  int32 employeeId = 3;
+  string orderDate = 4;
+  repeated OrderDetailResponse orderDetails = 5;
+}
+
+message CustomerWithOrders {
+  string customerId = 1;
+  string companyName = 2;
+  string contactName = 3;
+  repeated OrderWithDetails orders = 4;
 }

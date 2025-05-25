@@ -20,4 +20,10 @@ public class SoapService(IRepository repository) : ISoapService
     public Task<IEnumerable<Employee>> GetAllEmployeesAsync() => repository.GetAllEmployeesAsync();
 
     public Task<int> AddOrderAsync(Order order) => repository.AddOrderAsync(order);
+
+    public Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null)
+        => repository.GetOrdersWithDetailsAsync(orderId);
+
+    public Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null)
+        => repository.GetCustomerWithOrdersAsync(customerId);
 }

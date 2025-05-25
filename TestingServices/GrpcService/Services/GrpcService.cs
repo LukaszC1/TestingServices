@@ -113,7 +113,7 @@ namespace GrpcService.Services
 
         public override async Task<AddCustomerReply> AddCustomer(Customer request, ServerCallContext context)
         {
-            LocalRepository.DTO.Customer customer = new LocalRepository.DTO.Customer()
+            var customer = new LocalRepository.DTO.Customer()
             {
                 CustomerID = request.CustomerID,
                 CompanyName = request.CompanyName,
@@ -135,6 +135,85 @@ namespace GrpcService.Services
 
             var orderId = await repository.AddOrderAsync(order);
             return new AddOrderReply { OrderId = orderId };
+        }
+        public override async Task<OrdersWithDetailsResponse> GetOrdersWithDetails(OrdersWithDetailsRequest request, ServerCallContext context)
+        {
+            var orders = await repository.GetOrdersWithDetailsAsync(request.HasOrderId ? (int?)request.OrderId : null);
+            var response = new OrdersWithDetailsResponse();
+            foreach (var order in orders)
+            {
+                var orderMsg = new OrderWithDetails
+                {
+                    OrderId = order.OrderID,
+                    CustomerId = order.CustomerID ?? "",
+                    EmployeeId = order.EmployeeID,
+                    OrderDate = order.OrderDate.ToString("yyyy-MM-dd")
+                };
+
+                if (order.OrderDetails != null)
+                {
+                    foreach (var detail in order.OrderDetails)
+                    {
+                        orderMsg.OrderDetails.Add(new OrderDetailResponse
+                        {
+                            OrderId = detail.OrderID,
+                            ProductId = detail.ProductID,
+                            UnitPrice = (double)detail.UnitPrice,
+                            Quantity = detail.Quantity,
+                            Discount = detail.Discount
+                        });
+                    }
+                }
+                response.Orders.Add(orderMsg);
+            }
+            return response;
+        }
+
+        public override async Task<CustomersWithOrdersResponse> GetCustomersWithOrders(CustomersWithOrdersRequest request, ServerCallContext context)
+        {
+            var customers = await repository.GetCustomerWithOrdersAsync(string.IsNullOrEmpty(request.CustomerId) ? null : request.CustomerId);
+            var response = new CustomersWithOrdersResponse();
+            foreach (var customer in customers)
+            {
+                var customerMsg = new CustomerWithOrders
+                {
+                    CustomerId = customer.CustomerID ?? "",
+                    CompanyName = customer.CompanyName ?? "",
+                    ContactName = customer.ContactName ?? ""
+                };
+
+                if (customer.Orders != null)
+                {
+                    foreach (var order in customer.Orders)
+                    {
+                        var orderMsg = new OrderWithDetails
+                        {
+                            OrderId = order.OrderID,
+                            CustomerId = order.CustomerID ?? "",
+                            EmployeeId = order.EmployeeID,
+                            OrderDate = order.OrderDate.ToString("yyyy-MM-dd")
+                        };
+
+                        if (order.OrderDetails != null)
+                        {
+                            foreach (var detail in order.OrderDetails)
+                            {
+                                orderMsg.OrderDetails.Add(new OrderDetailResponse
+                                {
+                                    OrderId = detail.OrderID,
+                                    ProductId = detail.ProductID,
+                                    UnitPrice = (double)detail.UnitPrice,
+                                    Quantity = detail.Quantity,
+                                    Discount = detail.Discount
+                                });
+                            }
+                        }
+                        customerMsg.Orders.Add(orderMsg);
+                    }
+                }
+                response.Customers.Add(customerMsg);
+            }
+            return response;
         }
     }
 }

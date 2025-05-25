@@ -63,6 +63,18 @@ namespace RestService
                 return Results.Ok(details);
             });
 
+            app.MapGet("/orders-with-details", async (IRepository repo, int? orderId) =>
+            {
+                var orders = await repo.GetOrdersWithDetailsAsync(orderId);
+                return Results.Ok(orders);
+            });
+
+            app.MapGet("/customers-with-orders", async (IRepository repo, string? customerId) =>
+            {
+                var customers = await repo.GetCustomerWithOrdersAsync(customerId);
+                return Results.Ok(customers);
+            });
+
             app.MapPost("/customers", async (Customer customer, IRepository repo) =>
             {
                 var result = await repo.AddCustomerAsync(customer);

@@ -46,6 +46,27 @@ namespace GrpcService.Client
         {
             return await client.AddOrderAsync(order);
         }
+
+        public async Task<OrdersWithDetailsResponse> GetOrdersWithDetailsAsync(int? orderId = null)
+        {
+            var request = new OrdersWithDetailsRequest();
+            if (orderId.HasValue)
+            {
+                request.OrderId = orderId.Value;
+            }
+
+            return await client.GetOrdersWithDetailsAsync(request);
+        }
+
+        public async Task<CustomersWithOrdersResponse> GetCustomersWithOrdersAsync(string? customerId = null)
+        {
+            var request = new CustomersWithOrdersRequest();
+            if (!string.IsNullOrEmpty(customerId))
+            {
+                request.CustomerId = customerId;
+            }
+
+            return await client.GetCustomersWithOrdersAsync(request);
+        }
     }
-}
 }

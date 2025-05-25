@@ -20,6 +20,8 @@ namespace GraphqlService
             builder.Services.AddSingleton<OrderDetailType>();
             builder.Services.AddSingleton<MainQuery>();
             builder.Services.AddSingleton<ISchema, MainSchema>();
+            builder.Services.AddSingleton<OrderWithDetailsType>();
+            builder.Services.AddSingleton<CustomerWithOrdersType>();
 
             builder.Services.AddGraphQL(b => b
                 .AddAutoSchema<MainQuery>()

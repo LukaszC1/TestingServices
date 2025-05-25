@@ -28,5 +28,11 @@ namespace CoreWCFService
 
         [OperationContract]
         Task<int> AddOrderAsync(Order order);
+
+        [OperationContract]
+        Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null);
+
+        [OperationContract]
+        Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null);
     }
 }

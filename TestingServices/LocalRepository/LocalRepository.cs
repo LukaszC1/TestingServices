@@ -56,10 +56,24 @@ namespace LocalRepository
         {
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (@CustomerID, @CompanyName, @ContactName)", connection);
+            var cmd = new SqliteCommand(@"
+                INSERT INTO Customers (
+                    CustomerID, CompanyName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, Phone, Fax
+                ) VALUES (
+                    @CustomerID, @CompanyName, @ContactName, @ContactTitle, @Address, @City, @Region, @PostalCode, @Country, @Phone, @Fax
+                )", connection);
+
             cmd.Parameters.AddWithValue("@CustomerID", customer.CustomerID);
-            cmd.Parameters.AddWithValue("@CompanyName", customer.CompanyName);
+            cmd.Parameters.AddWithValue("@CompanyName", customer.CompanyName ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ContactName", customer.ContactName ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ContactTitle", customer.ContactTitle ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Address", customer.Address ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@City", customer.City ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Region", customer.Region ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@PostalCode", customer.PostalCode ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Country", customer.Country ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Phone", customer.Phone ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Fax", customer.Fax ?? (object)DBNull.Value);
 
             return await cmd.ExecuteNonQueryAsync() > 0;
         }
@@ -96,10 +110,27 @@ namespace LocalRepository
         {
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("INSERT INTO Orders (CustomerID, EmployeeID, OrderDate) VALUES (@CustomerID, @EmployeeID, @OrderDate); SELECT last_insert_rowid();", connection);
+            var cmd = new SqliteCommand(@"
+                INSERT INTO Orders (
+                    CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, ShipVia, Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry
+                ) VALUES (
+                    @CustomerID, @EmployeeID, @OrderDate, @RequiredDate, @ShippedDate, @ShipVia, @Freight, @ShipName, @ShipAddress, @ShipCity, @ShipRegion, @ShipPostalCode, @ShipCountry
+                );
+                SELECT last_insert_rowid();", connection);
+
             cmd.Parameters.AddWithValue("@CustomerID", order.CustomerID);
             cmd.Parameters.AddWithValue("@EmployeeID", order.EmployeeID);
-            cmd.Parameters.AddWithValue("@OrderDate", order.OrderDate);
+            cmd.Parameters.AddWithValue("@OrderDate", order.OrderDate ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@RequiredDate", order.RequiredDate ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShippedDate", order.ShippedDate ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipVia", order.ShipVia ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Freight", order.Freight ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipName", order.ShipName ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipAddress", order.ShipAddress ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipCity", order.ShipCity ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipRegion", order.ShipRegion ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipPostalCode", order.ShipPostalCode ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ShipCountry", order.ShipCountry ?? (object)DBNull.Value);
 
             var insertedId = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(insertedId);

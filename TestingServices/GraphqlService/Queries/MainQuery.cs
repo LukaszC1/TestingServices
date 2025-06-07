@@ -2,7 +2,6 @@
 using GraphQL.Types;
 using GraphqlService.Types;
 using LocalRepository;
-using LocalRepository.DTO;
 
 namespace GraphqlService.Queries;
 
@@ -32,25 +31,8 @@ public sealed class MainQuery : ObjectGraphType
             .ResolveAsync(async context =>
                 await repository.GetOrderDetailsByOrderIdAsync(context.GetArgument<int>("orderId")));
 
-        Field<BooleanGraphType>("addCustomer")
-            .Arguments(new QueryArguments(new QueryArgument<NonNullGraphType<CustomerInputType>> { Name = "customer" }))    
-            .ResolveAsync(async context =>
-            {
-                var customer = context.GetArgument<Customer>("customer");
-                return await repository.AddCustomerAsync(customer);
-            });
-
         Field<ListGraphType<EmployeeType>>("employees")
             .ResolveAsync(async context => await repository.GetAllEmployeesAsync());
-
-        Field<IntGraphType>("addOrder")
-            .Description("Adds a new order and returns the order ID.")
-            .Arguments()
-            .ResolveAsync(async context => 
-            {
-                var order = context.GetArgument<Order>("order");
-                return await repository.AddOrderAsync(order);
-            });
 
         Field<ListGraphType<OrderWithDetailsType>>("ordersWithDetails")
             .Description("Returns orders with their order details. Optionally filter by orderId.")

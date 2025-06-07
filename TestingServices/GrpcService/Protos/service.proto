@@ -113,12 +113,30 @@ message Customer {
     string customerID = 1;
     string companyName = 2;
     string contactName = 3;
+    string contactTitle = 4;
+    string address = 5;
+    string city = 6;
+    string region = 7;
+    string postalCode = 8;
+    string country = 9;
+    string phone = 10;
+    string fax = 11;
 }
 
 message Order {
     string customerID = 1;
     int32 employeeID = 2;
     string orderDate = 3;
+    string requiredDate = 4;
+    string shippedDate = 5;
+    int32 shipVia = 6;
+    double freight = 7;
+    string shipName = 8;
+    string shipAddress = 9;
+    string shipCity = 10;
+    string shipRegion = 11;
+    string shipPostalCode = 12;
+    string shipCountry = 13;
 }
 
 message OrderWithDetails {

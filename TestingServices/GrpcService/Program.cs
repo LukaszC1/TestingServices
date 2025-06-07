@@ -1,4 +1,5 @@
 using GrpcService.Client;
+using LocalRepository;
 
 namespace GrpcService
 {
@@ -9,6 +10,7 @@ namespace GrpcService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddSingleton<IRepository, LocalRepository.LocalRepository>();
             builder.Services.AddGrpc();
             builder.Services.AddGrpcClient<GrpcServiceClient>(o =>
             {

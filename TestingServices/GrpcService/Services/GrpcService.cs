@@ -2,7 +2,6 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcServiceProto;
 using LocalRepository;
-
 using Customer = GrpcServiceProto.Customer;
 using Employee = GrpcServiceProto.Employee;
 using Order = GrpcServiceProto.Order;
@@ -113,11 +112,19 @@ namespace GrpcService.Services
 
         public override async Task<AddCustomerReply> AddCustomer(Customer request, ServerCallContext context)
         {
-            var customer = new LocalRepository.DTO.Customer()
+            var customer = new LocalRepository.DTO.Customer
             {
                 CustomerID = request.CustomerID,
                 CompanyName = request.CompanyName,
-                ContactName = request.ContactName
+                ContactName = request.ContactName,
+                ContactTitle = request.ContactTitle,
+                Address = request.Address,
+                City = request.City,
+                Region = request.Region,
+                PostalCode = request.PostalCode,
+                Country = request.Country,
+                Phone = request.Phone,
+                Fax = request.Fax
             };
 
             var result = await repository.AddCustomerAsync(customer);
@@ -126,19 +133,30 @@ namespace GrpcService.Services
 
         public override async Task<AddOrderReply> AddOrder(Order request, ServerCallContext context)
         {
-            var order = new LocalRepository.DTO.Order()
+            var order = new LocalRepository.DTO.Order
             {
                 CustomerID = request.CustomerID,
-                EmployeeID = request.EmployeeID,
-                OrderDate = DateTime.Parse(request.OrderDate)
+                EmployeeID = request.EmployeeID == 0 ? null : request.EmployeeID,
+                OrderDate = string.IsNullOrEmpty(request.OrderDate) ? null : DateTime.Parse(request.OrderDate),
+                RequiredDate = string.IsNullOrEmpty(request.RequiredDate) ? null : DateTime.Parse(request.RequiredDate),
+                ShippedDate = string.IsNullOrEmpty(request.ShippedDate) ? null : DateTime.Parse(request.ShippedDate),
+                ShipVia = request.ShipVia == 0 ? null : request.ShipVia,
+                Freight = (decimal?)request.Freight,
+                ShipName = request.ShipName,
+                ShipAddress = request.ShipAddress,
+                ShipCity = request.ShipCity,
+                ShipRegion = request.ShipRegion,
+                ShipPostalCode = request.ShipPostalCode,
+                ShipCountry = request.ShipCountry
             };
 
             var orderId = await repository.AddOrderAsync(order);
             return new AddOrderReply { OrderId = orderId };
         }
+
         public override async Task<OrdersWithDetailsResponse> GetOrdersWithDetails(OrdersWithDetailsRequest request, ServerCallContext context)
         {
-            var orders = await repository.GetOrdersWithDetailsAsync(request.HasOrderId ? (int?)request.OrderId : null);
+            var orders = await repository.GetOrdersWithDetailsAsync(request.HasOrderId ? request.OrderId : null);
             var response = new OrdersWithDetailsResponse();
             foreach (var order in orders)
             {

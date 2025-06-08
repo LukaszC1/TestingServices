@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrpcService", "GrpcService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRepository", "LocalRepository\LocalRepository.csproj", "{BFB05D4F-A630-1223-0CB0-456E8CDDE840}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreWCFService", "CoreWCFService\CoreWCFService\CoreWCFService.csproj", "{16F35DA8-6F76-21C0-B1D2-890478D35EA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreWCFService", "CoreWCFService\CoreWCFService.csproj", "{16F35DA8-6F76-21C0-B1D2-890478D35EA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestService", "RestService\RestService.csproj", "{DDABDA9D-C911-4B10-8A60-1CCFF617DAEB}"
 EndProject

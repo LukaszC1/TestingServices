@@ -56,3 +56,4 @@ nunit-*.xml
 /TestingServices/.vs
 /TestingServices/northwind.db-shm
 /TestingServices/northwind.db-wal
+/TestingServices/PublishAllServices.bat

@@ -165,7 +165,6 @@ namespace LocalRepository
             return details;
         }
 
-        // Returns orders with their order details (nested), optionally filtered by orderId, using a single JOIN query
         public async Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null)
         {
             var ordersDict = new Dictionary<int, OrderWithDetails>();
@@ -200,7 +199,6 @@ namespace LocalRepository
                     ordersDict[oid] = order;
                 }
 
-                // If there is a detail row (ProductID not null)
                 if (!reader.IsDBNull(reader.GetOrdinal("ProductID")))
                 {
                     order.OrderDetails.Add(new OrderDetail
@@ -216,7 +214,6 @@ namespace LocalRepository
             return ordersDict.Values;
         }
 
-        // Returns customers with their orders and order details (nested), optionally filtered by customerId, using a single JOIN query
         public async Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null)
         {
             var customersDict = new Dictionary<string, CustomerWithOrders>();

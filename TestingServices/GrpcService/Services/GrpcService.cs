@@ -20,8 +20,14 @@ namespace GrpcService.Services
                 {
                     ProductId = product!.ProductID,
                     ProductName = product.ProductName ?? "",
+                    SupplierId = product.SupplierID ?? 0,
+                    CategoryId = product.CategoryID ?? 0,
                     QuantityPerUnit = product.QuantityPerUnit ?? "",
-                    UnitPrice = (double)(product.UnitPrice ?? 0)
+                    UnitPrice = (double)(product.UnitPrice ?? 0),
+                    UnitsInStock = product.UnitsInStock ?? 0,
+                    UnitsOnOrder = product.UnitsOnOrder ?? 0,
+                    ReorderLevel = product.ReorderLevel ?? 0,
+                    Discontinued = product.Discontinued
                 });
             }
             return response;
@@ -37,12 +43,19 @@ namespace GrpcService.Services
                 {
                     CustomerId = customer.CustomerID ?? "",
                     CompanyName = customer.CompanyName ?? "",
-                    ContactName = customer.ContactName ?? ""
+                    ContactName = customer.ContactName ?? "",
+                    ContactTitle = customer.ContactTitle ?? "",
+                    Address = customer.Address ?? "",
+                    City = customer.City ?? "",
+                    Region = customer.Region ?? "",
+                    PostalCode = customer.PostalCode ?? "",
+                    Country = customer.Country ?? "",
+                    Phone = customer.Phone ?? "",
+                    Fax = customer.Fax ?? ""
                 });
             }
             return response;
         }
-
 
         public override async Task<CustomerResponse> GetCustomerById(CustomerRequest request, ServerCallContext context)
         {
@@ -55,7 +68,15 @@ namespace GrpcService.Services
             {
                 CustomerId = customer.CustomerID ?? "",
                 CompanyName = customer.CompanyName ?? "",
-                ContactName = customer.ContactName ?? ""
+                ContactName = customer.ContactName ?? "",
+                ContactTitle = customer.ContactTitle ?? "",
+                Address = customer.Address ?? "",
+                City = customer.City ?? "",
+                Region = customer.Region ?? "",
+                PostalCode = customer.PostalCode ?? "",
+                Country = customer.Country ?? "",
+                Phone = customer.Phone ?? "",
+                Fax = customer.Fax ?? ""
             };
         }
 
@@ -69,7 +90,18 @@ namespace GrpcService.Services
                 {
                     OrderId = order.OrderID,
                     CustomerId = order.CustomerID ?? "",
-                    OrderDate = order.OrderDate?.ToString("yyyy-MM-dd") ?? ""
+                    EmployeeId = order.EmployeeID ?? 0,
+                    OrderDate = order.OrderDate?.ToString("yyyy-MM-dd") ?? "",
+                    RequiredDate = order.RequiredDate?.ToString("yyyy-MM-dd") ?? "",
+                    ShippedDate = order.ShippedDate?.ToString("yyyy-MM-dd") ?? "",
+                    ShipVia = order.ShipVia ?? 0,
+                    Freight = (double)(order.Freight ?? 0),
+                    ShipName = order.ShipName ?? "",
+                    ShipAddress = order.ShipAddress ?? "",
+                    ShipCity = order.ShipCity ?? "",
+                    ShipRegion = order.ShipRegion ?? "",
+                    ShipPostalCode = order.ShipPostalCode ?? "",
+                    ShipCountry = order.ShipCountry ?? ""
                 });
             }
             return response;
@@ -102,8 +134,8 @@ namespace GrpcService.Services
                 response.Employees.Add(new Employee
                 {
                     EmployeeId = employee.EmployeeID,
-                    FirstName = employee.FirstName,
-                    LastName = employee.LastName
+                    FirstName = employee.FirstName ?? "",
+                    LastName = employee.LastName ?? ""
                 });
             }
 
@@ -135,6 +167,7 @@ namespace GrpcService.Services
         {
             var order = new LocalRepository.DTO.Order
             {
+                OrderID = request.OrderId,
                 CustomerID = request.CustomerID,
                 EmployeeID = request.EmployeeID == 0 ? null : request.EmployeeID,
                 OrderDate = string.IsNullOrEmpty(request.OrderDate) ? null : DateTime.Parse(request.OrderDate),
@@ -197,7 +230,7 @@ namespace GrpcService.Services
                 {
                     CustomerId = customer.CustomerID ?? "",
                     CompanyName = customer.CompanyName ?? "",
-                    ContactName = customer.ContactName ?? ""
+                    ContactName = customer.ContactName ?? "",
                 };
 
                 if (customer.Orders != null)

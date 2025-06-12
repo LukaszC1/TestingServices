@@ -44,6 +44,14 @@ message CustomerResponse {
   string customerId = 1;
   string companyName = 2;
   string contactName = 3;
+  string contactTitle = 4;
+  string address = 5;
+  string city = 6;
+  string region = 7;
+  string postalCode = 8;
+  string country = 9;
+  string phone = 10;
+  string fax = 11;
 }
 
 message CustomerListResponse {
@@ -71,7 +79,18 @@ message OrderRequest {
 message OrderResponse {
   int32 orderId = 1;
   string customerId = 2;
-  string orderDate = 3;
+  int32 employeeId = 3;
+  string orderDate = 4;
+  string requiredDate = 5;
+  string shippedDate = 6;
+  int32 shipVia = 7;
+  double freight = 8;
+  string shipName = 9;
+  string shipAddress = 10;
+  string shipCity = 11;
+  string shipRegion = 12;
+  string shipPostalCode = 13;
+  string shipCountry = 14;
 }
 
 message OrderListResponse {
@@ -91,6 +110,12 @@ message ProductResponse {
   string productName = 2;
   string quantityPerUnit = 3;
   double unitPrice = 4;
+  int32 supplierId = 5;
+  int32 categoryId = 6;
+  int32 unitsInStock = 7;
+  int32 unitsOnOrder = 8;
+  int32 reorderLevel = 9;
+  bool discontinued = 10;
 }
 
 message ProductListResponse {
@@ -124,19 +149,20 @@ message Customer {
 }
 
 message Order {
-    string customerID = 1;
-    int32 employeeID = 2;
-    string orderDate = 3;
-    string requiredDate = 4;
-    string shippedDate = 5;
-    int32 shipVia = 6;
-    double freight = 7;
-    string shipName = 8;
-    string shipAddress = 9;
-    string shipCity = 10;
-    string shipRegion = 11;
-    string shipPostalCode = 12;
-    string shipCountry = 13;
+    int32 orderId = 1;
+    string customerID = 2;
+    int32 employeeID = 3;
+    string orderDate = 4;
+    string requiredDate = 5;
+    string shippedDate = 6;
+    int32 shipVia = 7;
+    double freight = 8;
+    string shipName = 9;
+    string shipAddress = 10;
+    string shipCity = 11;
+    string shipRegion = 12;
+    string shipPostalCode = 13;
+    string shipCountry = 14;
 }
 
 message OrderWithDetails {

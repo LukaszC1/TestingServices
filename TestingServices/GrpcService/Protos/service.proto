@@ -3,6 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "GrpcServiceProto";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 service GrpcService {
   rpc GetAllCustomers (google.protobuf.Empty) returns (CustomerListResponse);
@@ -30,28 +31,28 @@ message OrdersWithDetailsResponse {
 }
 
 message CustomersWithOrdersRequest {
-  optional string customerId = 1;
+  optional google.protobuf.StringValue customerId = 1;
 }
 message CustomersWithOrdersResponse {
   repeated CustomerWithOrders customers = 1;
 }
 
 message CustomerRequest {
-  string customerId = 1;
+  google.protobuf.StringValue customerId = 1;
 }
 
 message CustomerResponse {
-  string customerId = 1;
-  string companyName = 2;
-  string contactName = 3;
-  string contactTitle = 4;
-  string address = 5;
-  string city = 6;
-  string region = 7;
-  string postalCode = 8;
-  string country = 9;
-  string phone = 10;
-  string fax = 11;
+  google.protobuf.google.protobuf.StringValueValue customerId = 1;
+  google.protobuf.google.protobuf.StringValueValue companyName = 2;
+  google.protobuf.google.protobuf.StringValueValue contactName = 3;
+  google.protobuf.google.protobuf.StringValueValue contactTitle = 4;
+  google.protobuf.google.protobuf.StringValueValue address = 5;
+  google.protobuf.google.protobuf.StringValueValue city = 6;
+  google.protobuf.google.protobuf.StringValueValue region = 7;
+  google.protobuf.google.protobuf.StringValueValue postalCode = 8;
+  google.protobuf.google.protobuf.StringValueValue country = 9;
+  google.protobuf.google.protobuf.StringValueValue phone = 10;
+  google.protobuf.google.protobuf.StringValueValue fax = 11;
 }
 
 message CustomerListResponse {
@@ -64,8 +65,8 @@ message AddCustomerReply {
 
 message Employee {
   int32 employeeId = 1;
-  string firstName = 2;
-  string lastName = 3;
+  google.protobuf.StringValue firstName = 2;
+  google.protobuf.StringValue lastName = 3;
 }
 
 message EmployeeListResponse {
@@ -78,19 +79,19 @@ message OrderRequest {
 
 message OrderResponse {
   int32 orderId = 1;
-  string customerId = 2;
+  google.protobuf.StringValue customerId = 2;
   int32 employeeId = 3;
-  string orderDate = 4;
-  string requiredDate = 5;
-  string shippedDate = 6;
+  google.protobuf.StringValue orderDate = 4;
+  google.protobuf.StringValue requiredDate = 5;
+  google.protobuf.StringValue shippedDate = 6;
   int32 shipVia = 7;
   double freight = 8;
-  string shipName = 9;
-  string shipAddress = 10;
-  string shipCity = 11;
-  string shipRegion = 12;
-  string shipPostalCode = 13;
-  string shipCountry = 14;
+  google.protobuf.StringValue shipName = 9;
+  google.protobuf.StringValue shipAddress = 10;
+  google.protobuf.StringValue shipCity = 11;
+  google.protobuf.StringValue shipRegion = 12;
+  google.protobuf.StringValue shipPostalCode = 13;
+  google.protobuf.StringValue shipCountry = 14;
 }
 
 message OrderListResponse {
@@ -107,8 +108,8 @@ message ProductRequest {
 
 message ProductResponse {
   int32 productId = 1;
-  string productName = 2;
-  string quantityPerUnit = 3;
+  google.protobuf.StringValue productName = 2;
+  google.protobuf.StringValue quantityPerUnit = 3;
   double unitPrice = 4;
   int32 supplierId = 5;
   int32 categoryId = 6;
@@ -135,47 +136,47 @@ message OrderDetailListResponse {
 }
 
 message Customer {
-    string customerID = 1;
-    string companyName = 2;
-    string contactName = 3;
-    string contactTitle = 4;
-    string address = 5;
-    string city = 6;
-    string region = 7;
-    string postalCode = 8;
-    string country = 9;
-    string phone = 10;
-    string fax = 11;
+    google.protobuf.StringValue customerID = 1;
+    google.protobuf.StringValue companyName = 2;
+    google.protobuf.StringValue contactName = 3;
+    google.protobuf.StringValue contactTitle = 4;
+    google.protobuf.StringValue address = 5;
+    google.protobuf.StringValue city = 6;
+    google.protobuf.StringValue region = 7;
+    google.protobuf.StringValue postalCode = 8;
+    google.protobuf.StringValue country = 9;
+    google.protobuf.StringValue phone = 10;
+    google.protobuf.StringValue fax = 11;
 }
 
 message Order {
     int32 orderId = 1;
-    string customerID = 2;
+    google.protobuf.StringValue customerID = 2;
     int32 employeeID = 3;
-    string orderDate = 4;
-    string requiredDate = 5;
-    string shippedDate = 6;
+    google.protobuf.StringValue orderDate = 4;
+    google.protobuf.StringValue requiredDate = 5;
+    google.protobuf.StringValue shippedDate = 6;
     int32 shipVia = 7;
     double freight = 8;
-    string shipName = 9;
-    string shipAddress = 10;
-    string shipCity = 11;
-    string shipRegion = 12;
-    string shipPostalCode = 13;
-    string shipCountry = 14;
+    google.protobuf.StringValue shipName = 9;
+    google.protobuf.StringValue shipAddress = 10;
+    google.protobuf.StringValue shipCity = 11;
+    google.protobuf.StringValue shipRegion = 12;
+    google.protobuf.StringValue shipPostalCode = 13;
+    google.protobuf.StringValue shipCountry = 14;
 }
 
 message OrderWithDetails {
   int32 orderId = 1;
-  string customerId = 2;
+  google.protobuf.StringValue customerId = 2;
   int32 employeeId = 3;
-  string orderDate = 4;
+  google.protobuf.StringValue orderDate = 4;
   repeated OrderDetailResponse orderDetails = 5;
 }
 
 message CustomerWithOrders {
-  string customerId = 1;
-  string companyName = 2;
-  string contactName = 3;
+  google.protobuf.StringValue customerId = 1;
+  google.protobuf.StringValue companyName = 2;
+  google.protobuf.StringValue contactName = 3;
   repeated OrderWithDetails orders = 4;
 }

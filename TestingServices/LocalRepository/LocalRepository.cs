@@ -173,7 +173,7 @@ namespace LocalRepository
 
             var sql = @"
                 SELECT o.OrderID, o.CustomerID, o.EmployeeID, o.OrderDate,
-                       od.ProductID, od.Quantity
+                       od.ProductID, od.Quantity, od.UnitPrice, od.Discount
                 FROM Orders o
                 LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
                 " + (orderId.HasValue ? "WHERE o.OrderID = @OrderID" : "");
@@ -194,7 +194,7 @@ namespace LocalRepository
                         CustomerID = reader["CustomerID"].ToString(),
                         EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
                         OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate")),
-                        OrderDetails = []
+                        OrderDetails = new List<OrderDetail>()
                     };
                     ordersDict[oid] = order;
                 }
@@ -205,7 +205,9 @@ namespace LocalRepository
                     {
                         OrderID = oid,
                         ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-                        Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+                        Quantity = reader.GetInt16(reader.GetOrdinal("Quantity")),
+                        UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
+                        Discount = reader.GetFloat(reader.GetOrdinal("Discount"))
                     });
                 }
             }
@@ -223,7 +225,7 @@ namespace LocalRepository
             var sql = @"
                 SELECT c.CustomerID, c.CompanyName, c.ContactName,
                        o.OrderID, o.EmployeeID, o.OrderDate,
-                       od.ProductID, od.Quantity
+                       od.ProductID, od.Quantity, od.UnitPrice, od.Discount
                 FROM Customers c
                 LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
                 LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
@@ -244,12 +246,11 @@ namespace LocalRepository
                         CustomerID = cid,
                         CompanyName = reader["CompanyName"].ToString(),
                         ContactName = reader["ContactName"].ToString(),
-                        Orders = []
+                        Orders = new List<OrderWithDetails>()
                     };
                     customersDict[cid] = customer;
                 }
 
-                // If there is an order row (OrderID not null)
                 if (!reader.IsDBNull(reader.GetOrdinal("OrderID")))
                 {
                     var oid = reader.GetInt32(reader.GetOrdinal("OrderID"));
@@ -267,14 +268,15 @@ namespace LocalRepository
                         customer.Orders.Add(order);
                     }
 
-                    // If there is a detail row (ProductID not null)
                     if (!reader.IsDBNull(reader.GetOrdinal("ProductID")))
                     {
                         order.OrderDetails.Add(new OrderDetail
                         {
                             OrderID = oid,
                             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-                            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+                            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity")),
+                            UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
+                            Discount = reader.GetFloat(reader.GetOrdinal("Discount"))
                         });
                     }
                 }
@@ -288,7 +290,15 @@ namespace LocalRepository
         {
             CustomerID = reader["CustomerID"].ToString(),
             CompanyName = reader["CompanyName"].ToString(),
-            ContactName = reader["ContactName"].ToString()
+            ContactName = reader["ContactName"].ToString(),
+            ContactTitle = reader["ContactTitle"].ToString(),
+            Address = reader["Address"].ToString(),
+            City = reader["City"].ToString(),
+            Region = reader["Region"].ToString(),
+            PostalCode = reader["PostalCode"].ToString(),
+            Country = reader["Country"].ToString(),
+            Phone = reader["Phone"].ToString(),
+            Fax = reader["Fax"].ToString()
         };
 
         private static Employee MapEmployee(SqliteDataReader reader) => new Employee
@@ -302,21 +312,41 @@ namespace LocalRepository
         {
             OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
             CustomerID = reader["CustomerID"].ToString(),
-            EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
-            OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate"))
+            EmployeeID = reader.IsDBNull(reader.GetOrdinal("EmployeeID")) ? null : reader.GetInt32(reader.GetOrdinal("EmployeeID")),
+            OrderDate = reader.IsDBNull(reader.GetOrdinal("OrderDate")) ? null : reader.GetDateTime(reader.GetOrdinal("OrderDate")),
+            RequiredDate = reader.IsDBNull(reader.GetOrdinal("RequiredDate")) ? null : reader.GetDateTime(reader.GetOrdinal("RequiredDate")),
+            ShippedDate = reader.IsDBNull(reader.GetOrdinal("ShippedDate")) ? null : reader.GetDateTime(reader.GetOrdinal("ShippedDate")),
+            ShipVia = reader.IsDBNull(reader.GetOrdinal("ShipVia")) ? null : reader.GetInt32(reader.GetOrdinal("ShipVia")),
+            Freight = reader.IsDBNull(reader.GetOrdinal("Freight")) ? null : reader.GetDecimal(reader.GetOrdinal("Freight")),
+            ShipName = reader["ShipName"].ToString(),
+            ShipAddress = reader["ShipAddress"].ToString(),
+            ShipCity = reader["ShipCity"].ToString(),
+            ShipRegion = reader["ShipRegion"].ToString(),
+            ShipPostalCode = reader["ShipPostalCode"].ToString(),
+            ShipCountry = reader["ShipCountry"].ToString()
         };
 
         private static Product MapProduct(SqliteDataReader reader) => new Product
         {
             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-            ProductName = reader["ProductName"].ToString()
+            ProductName = reader["ProductName"].ToString(),
+            SupplierID = reader.IsDBNull(reader.GetOrdinal("SupplierID")) ? null : reader.GetInt32(reader.GetOrdinal("SupplierID")),
+            CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
+            QuantityPerUnit = reader["QuantityPerUnit"].ToString(),
+            UnitPrice = reader.IsDBNull(reader.GetOrdinal("UnitPrice")) ? null : reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
+            UnitsInStock = reader.IsDBNull(reader.GetOrdinal("UnitsInStock")) ? null : reader.GetInt16(reader.GetOrdinal("UnitsInStock")),
+            UnitsOnOrder = reader.IsDBNull(reader.GetOrdinal("UnitsOnOrder")) ? null : reader.GetInt16(reader.GetOrdinal("UnitsOnOrder")),
+            ReorderLevel = reader.IsDBNull(reader.GetOrdinal("ReorderLevel")) ? null : reader.GetInt16(reader.GetOrdinal("ReorderLevel")),
+            Discontinued = reader.GetBoolean(reader.GetOrdinal("Discontinued"))
         };
 
         private static OrderDetail MapOrderDetail(SqliteDataReader reader) => new OrderDetail
         {
             OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity"))
+            UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
+            Quantity = reader.GetInt16(reader.GetOrdinal("Quantity")),
+            Discount = reader.GetFloat(reader.GetOrdinal("Discount"))
         };
     }
 }

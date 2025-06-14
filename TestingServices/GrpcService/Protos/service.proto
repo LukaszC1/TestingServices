@@ -42,17 +42,17 @@ message CustomerRequest {
 }
 
 message CustomerResponse {
-  google.protobuf.StringValueValue customerId = 1;
-  google.protobuf.StringValueValue companyName = 2;
-  google.protobuf.StringValueValue contactName = 3;
-  google.protobuf.StringValueValue contactTitle = 4;
-  google.protobuf.StringValueValue address = 5;
-  google.protobuf.StringValueValue city = 6;
-  google.protobuf.StringValueValue region = 7;
-  google.protobuf.StringValueValue postalCode = 8;
-  google.protobuf.StringValueValue country = 9;
-  google.protobuf.StringValueValue phone = 10;
-  google.protobuf.StringValueValue fax = 11;
+  google.protobuf.StringValue customerId = 1;
+  google.protobuf.StringValue companyName = 2;
+  google.protobuf.StringValue contactName = 3;
+  google.protobuf.StringValue contactTitle = 4;
+  google.protobuf.StringValue address = 5;
+  google.protobuf.StringValue city = 6;
+  google.protobuf.StringValue region = 7;
+  google.protobuf.StringValue postalCode = 8;
+  google.protobuf.StringValue country = 9;
+  google.protobuf.StringValue phone = 10;
+  google.protobuf.StringValue fax = 11;
 }
 
 message CustomerListResponse {

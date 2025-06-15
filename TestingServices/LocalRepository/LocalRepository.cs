@@ -222,14 +222,43 @@ namespace LocalRepository
             await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
 
-            var sql = @"
-                SELECT c.CustomerID, c.CompanyName, c.ContactName,
-                       o.OrderID, o.EmployeeID, o.OrderDate,
-                       od.ProductID, od.Quantity, od.UnitPrice, od.Discount
-                FROM Customers c
-                LEFT JOIN Orders o ON c.CustomerID = o.CustomerID
-                LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
-                " + (customerId != null ? "WHERE c.CustomerID = @CustomerID" : "");
+            var sql = """
+                                  WITH RankedOrders AS (
+                                    SELECT
+                                      o.OrderID,
+                                      o.CustomerID,
+                                      o.EmployeeID,
+                                      o.OrderDate,
+                                      ROW_NUMBER() OVER (
+                                        PARTITION BY o.CustomerID
+                                        ORDER BY o.OrderDate DESC, o.OrderID
+                                      ) AS rn
+                                    FROM Orders o
+                                            
+                      """ + (customerId != null ? "WHERE o.CustomerID = @CustomerID" : "") + """
+
+                                    )
+                                    SELECT
+                                      c.CustomerID,
+                                      c.CompanyName,
+                                      c.ContactName,
+                                      ro.OrderID,
+                                      ro.EmployeeID,
+                                      ro.OrderDate,
+                                      od.ProductID,
+                                      od.Quantity,
+                                      od.UnitPrice,
+                                      od.Discount
+                                    FROM Customers c
+                                    LEFT JOIN RankedOrders ro
+                                      ON c.CustomerID = ro.CustomerID AND ro.rn <= 10
+                                    LEFT JOIN [Order Details] od
+                                      ON ro.OrderID = od.OrderID
+                                    
+                """ + (customerId != null ? "WHERE c.CustomerID = @CustomerID" : "") + """
+
+                                    ORDER BY c.CustomerID, ro.OrderDate DESC, ro.OrderID
+                """;
 
             var cmd = new SqliteCommand(sql, connection);
             if (customerId != null)

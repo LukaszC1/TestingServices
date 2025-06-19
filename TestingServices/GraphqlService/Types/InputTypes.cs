@@ -27,6 +27,7 @@ public sealed class OrderInputType : InputObjectGraphType<Order>
     public OrderInputType()
     {
         Name = "OrderInput";
+        Field(x => x.OrderID, nullable: false);
         Field(x => x.CustomerID, nullable: true);
         Field(x => x.EmployeeID, nullable: true);
         Field(x => x.OrderDate, nullable: true);

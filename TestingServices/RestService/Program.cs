@@ -84,7 +84,7 @@ namespace RestService
             app.MapPost("/orders", async (Order order, IRepository repo) =>
             {
                 var orderId = await repo.AddOrderAsync(order);
-                return orderId > 0 ? Results.Created($"/orders/{orderId}", orderId) : Results.BadRequest();
+                return orderId > 0 ? Results.Created($"/orders/{orderId}", $"orderId = {orderId}") : Results.BadRequest();
             });
 
             app.Run();

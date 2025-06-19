@@ -9,15 +9,23 @@ namespace GrpcService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddSingleton<IRepository, LocalRepository.LocalRepository>();
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddSingleton<IRepository>(sp => new LocalRepository.LocalRepository(connectionString));
             builder.Services.AddGrpc();
             builder.Services.AddGrpcClient<GrpcServiceClient>(o =>
             {
                 o.Address = new Uri("https://localhost:5001");
             });
 
-            var app = builder.Build();
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                var http2 = options.Limits.Http2;
+                http2.InitialConnectionWindowSize = 1024 * 1024 * 2; // 2 MB
+                http2.InitialStreamWindowSize = 1024 * 1024; // 1 MB
+            });
+            
+           var app = builder.Build();
+           app.UseWebSockets();
 
             // Configure the HTTP request pipeline.
             app.MapGrpcService<Services.GrpcService>();

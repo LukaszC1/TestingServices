@@ -1,5 +1,5 @@
 ﻿using LocalRepository.DTO;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 
 namespace LocalRepository
 {
@@ -10,28 +10,13 @@ namespace LocalRepository
         public LocalRepository(string connectionString)
         {
             _connectionString = connectionString;
-            EnableWriteAheadLogging();
-        }
-
-        public LocalRepository()
-        {
-            _connectionString = "Data Source=../northwind.db;Pooling=True;";
-            EnableWriteAheadLogging();
-        }
-        
-        private void EnableWriteAheadLogging()
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-            using var command = new SqliteCommand("PRAGMA journal_mode=WAL;", connection);
-            command.ExecuteNonQuery();
         }
 
         public async Task<Customer?> GetCustomerByIdAsync(string customerId)
         {
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM Customers WHERE CustomerID = @CustomerID", connection);
+            var cmd = new SqlCommand("SELECT * FROM Customers WHERE CustomerID = @CustomerID", connection);
             cmd.Parameters.AddWithValue("@CustomerID", customerId);
 
             var reader = await cmd.ExecuteReaderAsync();
@@ -41,9 +26,9 @@ namespace LocalRepository
         public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
         {
             var customers = new List<Customer>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM Customers", connection);
+            var cmd = new SqlCommand("SELECT * FROM Customers", connection);
             var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -54,9 +39,9 @@ namespace LocalRepository
 
         public async Task<bool> AddCustomerAsync(Customer customer)
         {
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand(@"
+            var cmd = new SqlCommand(@"
                 INSERT INTO Customers (
                     CustomerID, CompanyName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, Phone, Fax
                 ) VALUES (
@@ -81,9 +66,9 @@ namespace LocalRepository
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
             var employees = new List<Employee>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM Employees", connection);
+            var cmd = new SqlCommand("SELECT * FROM Employees", connection);
             var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -95,9 +80,9 @@ namespace LocalRepository
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
             var orders = new List<Order>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM Orders", connection);
+            var cmd = new SqlCommand("SELECT * FROM Orders", connection);
             var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -108,15 +93,15 @@ namespace LocalRepository
 
         public async Task<int> AddOrderAsync(Order order)
         {
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand(@"
+            var cmd = new SqlCommand(@"
                 INSERT INTO Orders (
                     CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, ShipVia, Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry
                 ) VALUES (
                     @CustomerID, @EmployeeID, @OrderDate, @RequiredDate, @ShippedDate, @ShipVia, @Freight, @ShipName, @ShipAddress, @ShipCity, @ShipRegion, @ShipPostalCode, @ShipCountry
                 );
-                SELECT last_insert_rowid();", connection);
+                SELECT SCOPE_IDENTITY();", connection);
 
             cmd.Parameters.AddWithValue("@CustomerID", order.CustomerID);
             cmd.Parameters.AddWithValue("@EmployeeID", order.EmployeeID);
@@ -139,9 +124,9 @@ namespace LocalRepository
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
             var products = new List<Product>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM Products", connection);
+            var cmd = new SqlCommand("SELECT * FROM Products", connection);
             var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -153,9 +138,9 @@ namespace LocalRepository
         public async Task<IEnumerable<OrderDetail>> GetOrderDetailsByOrderIdAsync(int orderId)
         {
             var details = new List<OrderDetail>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            var cmd = new SqliteCommand("SELECT * FROM [Order Details] WHERE OrderID = @OrderID", connection);
+            var cmd = new SqlCommand("SELECT * FROM [Order Details] WHERE OrderID = @OrderID", connection);
             cmd.Parameters.AddWithValue("@OrderID", orderId);
             var reader = await cmd.ExecuteReaderAsync();
 
@@ -168,7 +153,7 @@ namespace LocalRepository
         public async Task<IEnumerable<OrderWithDetails>> GetOrdersWithDetailsAsync(int? orderId = null)
         {
             var ordersDict = new Dictionary<int, OrderWithDetails>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
             var sql = @"
@@ -178,7 +163,7 @@ namespace LocalRepository
                 LEFT JOIN [Order Details] od ON o.OrderID = od.OrderID
                 " + (orderId.HasValue ? "WHERE o.OrderID = @OrderID" : "");
 
-            var cmd = new SqliteCommand(sql, connection);
+            var cmd = new SqlCommand(sql, connection);
             if (orderId.HasValue)
                 cmd.Parameters.AddWithValue("@OrderID", orderId.Value);
 
@@ -219,7 +204,7 @@ namespace LocalRepository
         public async Task<IEnumerable<CustomerWithOrders>> GetCustomerWithOrdersAsync(string? customerId = null)
         {
             var customersDict = new Dictionary<string, CustomerWithOrders>();
-            await using var connection = new SqliteConnection(_connectionString);
+            await using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
             var sql = """
@@ -260,7 +245,7 @@ namespace LocalRepository
                                     ORDER BY c.CustomerID, ro.OrderDate DESC, ro.OrderID
                 """;
 
-            var cmd = new SqliteCommand(sql, connection);
+            var cmd = new SqlCommand(sql, connection);
             if (customerId != null)
                 cmd.Parameters.AddWithValue("@CustomerID", customerId);
 
@@ -315,7 +300,7 @@ namespace LocalRepository
             return customersDict.Values;
         }
 
-        private static Customer MapCustomer(SqliteDataReader reader) => new Customer
+        private static Customer MapCustomer(SqlDataReader reader) => new Customer
         {
             CustomerID = reader["CustomerID"].ToString(),
             CompanyName = reader["CompanyName"].ToString(),
@@ -330,14 +315,14 @@ namespace LocalRepository
             Fax = reader["Fax"].ToString()
         };
 
-        private static Employee MapEmployee(SqliteDataReader reader) => new Employee
+        private static Employee MapEmployee(SqlDataReader reader) => new Employee
         {
             EmployeeID = reader.GetInt32(reader.GetOrdinal("EmployeeID")),
             FirstName = reader["FirstName"].ToString(),
             LastName = reader["LastName"].ToString()
         };
 
-        private static Order MapOrder(SqliteDataReader reader) => new Order
+        private static Order MapOrder(SqlDataReader reader) => new Order
         {
             OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
             CustomerID = reader["CustomerID"].ToString(),
@@ -355,7 +340,7 @@ namespace LocalRepository
             ShipCountry = reader["ShipCountry"].ToString()
         };
 
-        private static Product MapProduct(SqliteDataReader reader) => new Product
+        private static Product MapProduct(SqlDataReader reader) => new Product
         {
             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
             ProductName = reader["ProductName"].ToString(),
@@ -369,7 +354,7 @@ namespace LocalRepository
             Discontinued = reader.GetBoolean(reader.GetOrdinal("Discontinued"))
         };
 
-        private static OrderDetail MapOrderDetail(SqliteDataReader reader) => new OrderDetail
+        private static OrderDetail MapOrderDetail(SqlDataReader reader) => new OrderDetail
         {
             OrderID = reader.GetInt32(reader.GetOrdinal("OrderID")),
             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),

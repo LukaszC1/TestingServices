@@ -15,6 +15,9 @@ namespace GraphqlService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddSingleton<IRepository>(sp => new LocalRepository.LocalRepository(connectionString));
             builder.Services.AddSingleton<ProductType>();
             builder.Services.AddSingleton<CustomerType>();
             builder.Services.AddSingleton<EmployeeType>();
@@ -26,9 +29,8 @@ namespace GraphqlService
             builder.Services.AddSingleton<OrderInputType>();
             builder.Services.AddSingleton<CustomerInputType>();
             builder.Services.AddSingleton<MainMutation>();
-
+                
             builder.Services.AddSingleton<ISchema, MainSchema>();
-            builder.Services.AddSingleton<IRepository, LocalRepository.LocalRepository>();
             builder.Services.AddSingleton<IErrorInfoProvider>(sp =>
                 new ErrorInfoProvider(new ErrorInfoProviderOptions
                 {

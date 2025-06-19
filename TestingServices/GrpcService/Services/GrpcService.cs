@@ -183,8 +183,8 @@ namespace GrpcService.Services
                 ShipCountry = request.ShipCountry
             };
 
-            var orderId = await repository.AddOrderAsync(order);
-            return new AddOrderReply { OrderId = orderId };
+            var result = await repository.AddOrderAsync(order);
+            return new AddOrderReply { OrderId = result };
         }
 
         public override async Task<OrdersWithDetailsResponse> GetOrdersWithDetails(OrdersWithDetailsRequest request, ServerCallContext context)

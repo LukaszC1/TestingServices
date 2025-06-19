@@ -4,7 +4,9 @@ var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddServiceModelServices();
 builder.Services.AddServiceModelMetadata();
-builder.Services.AddSingleton<IRepository, LocalRepository.LocalRepository>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddSingleton<IRepository>(sp => new LocalRepository.LocalRepository(connectionString));
 builder.Services.AddSingleton<SoapService>();
 
 builder.Services.AddSingleton<IServiceBehavior>(new ServiceBehaviorAttribute
